@@ -14,3 +14,13 @@
 - [ ] Drivrutiner för bluetooth
 - [ ] Testa bluetooth
 
+##Drivrutiner TL-WN725N
+OS ver. 4.1.13-v7+ #826
+https://dl.dropboxusercontent.com/u/80256631/8188eu-v7-20151113.tar.gz
+```
+wget https://dl.dropboxusercontent.com/u/80256631/8188eu-v7-20151113.tar.gz &&
+tar xzf 8188eu-v7-20151113.tar.gz &&
+./install.sh
+```
+### Andra OS versioner
+https://www.raspberrypi.org/forums/viewtopic.php?p=462982#p462982
