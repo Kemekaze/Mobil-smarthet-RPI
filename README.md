@@ -11,8 +11,8 @@
 - [x] Ändra lösen
 - [x] Updatera och uppgradera biblotek
 - [x] Java och JDK installerat
-- [ ] Drivrutiner för bluetooth
-- [ ] Testa bluetooth
+- [ ] Installera drirutiner för bluetooth
+- [ ] Testa att ansluta med bluetooth 
 - [ ] Installera drirutiner för Phidgets sensor
 - [ ] Installera drirutiner för Yoctopuce sensor
 
