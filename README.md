@@ -3,8 +3,8 @@ Raspberry pi repo för Mobil smarthet
 
 #authentication
 
-user: pi
-pw: notRandom
-root pw: 650msDat
+* user: **pi**
+* pw: **notRandom**
+* root pw: **650msDat**
 
 
