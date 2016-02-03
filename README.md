@@ -10,7 +10,7 @@
 ##Installation
 - [x] Ändra lösen
 - [x] Updatera och uppgradera biblotek
-- [ ] Java och JDK installerat
+- [x] Java och JDK installerat
 - [ ] Drivrutiner för bluetooth
 - [ ] Testa bluetooth
 
