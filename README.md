@@ -9,8 +9,8 @@
 
 ##Installation
 - [x] Ändra lösen
-- [x] Updatera och uppgradera biblotek
-- [x] Java och JDK installerat
+- [x] Updatera och uppgradera bibloteken
+- [x] Installera Java och JDK
 - [ ] Installera drirutiner för bluetooth
 - [ ] Testa att ansluta med bluetooth 
 - [ ] Installera drirutiner för Phidgets sensor
