@@ -13,6 +13,8 @@
 - [x] Java och JDK installerat
 - [ ] Drivrutiner för bluetooth
 - [ ] Testa bluetooth
+- [ ] Installera drirutiner för Phidgets sensor
+- [ ] Installera drirutiner för Yoctopuce sensor
 
 ##Drivrutiner TL-WN725N
 OS ver. 4.1.13-v7+ #826
