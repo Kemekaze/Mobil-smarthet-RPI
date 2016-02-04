@@ -14,7 +14,7 @@
 - [ ] Installera drirutiner för bluetooth
 - [ ] Testa att ansluta med bluetooth 
 - [ ] Installera drirutiner för Phidgets sensor
-- [ ] Installera drirutiner för Yoctopuce sensor
+- [x] Installera drirutiner för Yoctopuce sensor
 
 ##Drivrutiner TL-WN725N
 OS ver. 4.1.13-v7+ #826
