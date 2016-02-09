@@ -18,6 +18,7 @@ public class Server {
 	
 
 	public static void main(String[] args) {
+		//blubb
 		Thread t1 = new Thread (BtAdapter.get(), "train1");
 		t1.start();
 	}
