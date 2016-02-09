@@ -4,5 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/phidgets/phidget21.jar"/>
 	<classpathentry kind="lib" path="lib/yocotopuce/yoctoAPI.jar"/>
+	<classpathentry kind="lib" path="lib/bluecove-2.1.1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
