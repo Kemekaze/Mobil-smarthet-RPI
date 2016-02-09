@@ -25,7 +25,6 @@ public class SoundChange implements SensorChangeListener{
 
     public void sensorChanged(SensorChangeEvent sensorChangeEvent)
     {
-	    		//System.out.println(sensorChangeEvent.getValue());
 	    		try (	FileWriter output = new FileWriter("text.txt", true)) {
 	    			dB = (int) Math.round( 16.801*Math.log( sensorChangeEvent.getValue()) +9.872 );
 	    			//output.write(dB + ",");
