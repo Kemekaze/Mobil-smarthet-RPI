@@ -18,8 +18,8 @@ The USB ports on the standard Raspberry Pi are only capable of supplying around 
 - [x] Ändra lösen
 - [x] Updatera och uppgradera bibloteken
 - [x] Installera Java och JDK
-- [ ] Installera drirutiner för bluetooth
-- [ ] Testa att ansluta med bluetooth 
+- [x] Installera drirutiner för bluetooth
+- [x] Testa att ansluta med bluetooth 
 - [x] Installera drirutiner för Phidgets sensor
 - [x] Installera drirutiner för Yoctopuce sensor
 
@@ -33,3 +33,9 @@ tar xzf 8188eu-v7-20151113.tar.gz &&
 ```
 ### Andra OS versioner
 https://www.raspberrypi.org/forums/viewtopic.php?p=462982#p462982
+### FAQ
+Bluetooth servern får error
+```
+javax.bluetooth.ServiceRegistrationException: Can not open SDP session. [2] No such file or directory
+```
+blutoothd -> bluetoothd -c i /etc/init.d/bluetooth 
