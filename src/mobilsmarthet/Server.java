@@ -1,12 +1,13 @@
 package mobilsmarthet;
 
+import com.intel.bluetooth.*;
 import java.util.ArrayList;
 import javax.bluetooth.*;
 
 import com.phidgets.*;
 
 import api.*;
-import bluetooth.BtAdapter;
+import bluetooth.*;
 import db.DB;
 
 
@@ -18,9 +19,10 @@ public class Server {
 	
 
 	public static void main(String[] args) {
-		//blubb
-		Thread t1 = new Thread (BtAdapter.get(), "train1");
-		t1.start();
+		//if(args[0] == "1")
+			BtServer.get().debugOn();
+		/*else
+			BtClient.get().debugOn();*/
 	}
 
 }
