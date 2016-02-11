@@ -1,6 +1,7 @@
 package bluetooth;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -8,6 +9,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Vector;
 
 import javax.bluetooth.BluetoothStateException;
@@ -26,12 +29,11 @@ public class BtServer implements Runnable{
 	 	
 	    private UUID uuid =null;;    
 	  	private String connectionURL = null;	  	
-	    private StreamConnection streamConnection = null;
 	    private StreamConnectionNotifier streamConnNotifier = null;
-	    private ArrayList<RemoteDevice> clients;
+	    private ArrayList<BtClient> clients;
 	    private LocalDevice localDevice = null;
 	    
-	  	private boolean debug 		 = false;
+	  	private boolean debug 		 = true;
 	    private Thread thread;
 	    private boolean isRunning = true;
 	    
@@ -39,15 +41,21 @@ public class BtServer implements Runnable{
 		private BtServer(){
 			uuid=new UUID("57e33d1fc1674f5aa94f5f0c58f49356", false);
 			connectionURL = "btspp://localhost:"+uuid.toString()+";authenticate=false;encrypt=false;name=LeBox";
-			clients = new ArrayList<RemoteDevice>();
-			thread = new Thread (this, "Server");
+			print(connectionURL);
+			clients = new ArrayList<BtClient>();
+			thread = new Thread (this, "Bluetooth Server");
 			thread.start();
 		}
 		
 		public void run() {
-			try{
+			try{				
+				init();
+				while(isRunning){
+					print("Waiting for Clients...");
+					StreamConnection streamConnection = streamConnNotifier.acceptAndOpen();
+					addClient(streamConnection);
+				}
 				
-				start();
 			}catch(IOException e){
 				e.printStackTrace();
 			}
@@ -62,50 +70,79 @@ public class BtServer implements Runnable{
 		public void debugOff(){
 			debug = false;
 		}
-		private void start() throws IOException{			
-			localDevice();
+		private void init() throws IOException{	
+			localDevice = LocalDevice.getLocalDevice();
+			localDevice.setDiscoverable(DiscoveryAgent.GIAC);
+			print("Local device address: "+localDevice.getBluetoothAddress());
+			print("Local device name: "+localDevice.getFriendlyName());			
 			streamConnNotifier = (StreamConnectionNotifier)Connector.open( connectionURL );
 			print("Server up");
-			print("Waiting for clients...");
-			streamConnection=streamConnNotifier.acceptAndOpen();
-			addClient(RemoteDevice.getRemoteDevice(streamConnection));
 		}
-		private void localDevice() throws BluetoothStateException{
-			localDevice = LocalDevice.getLocalDevice();
-			//localDevice.setDiscoverable(DiscoveryAgent.GIAC);
-			print("Local device discoverable: "+localDevice.getDiscoverable());
-			print("Local device class: "+localDevice.getDeviceClass());
-			print("Local device address: "+localDevice.getBluetoothAddress());
-			print("Local device name: "+localDevice.getFriendlyName());
-		}
-		private void addClient(RemoteDevice client) throws IOException{			
+		private void addClient(StreamConnection streamConnection) throws IOException{
+			BtClient client = new BtClient(streamConnection);
 			clients.add(client);
 			print("Client connected");
 			print("Remote device address: "+client.getBluetoothAddress());
 			print("Remote device name: "+client.getFriendlyName(true));
 		}
-		
+		public ArrayList<BtClient> getClients(){
+			return clients;
+		}
 		private void print(String msg){			
 			if(debug) System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
 		}
-		public String read() throws IOException{
-			if(streamConnection == null){
-				throw new IOException("streamConnection is null");
+		private class BtClient extends Thread implements Runnable{
+			private StreamConnection stream = null;
+			private RemoteDevice device = null;
+			private OutputStream out = null;
+			private InputStream in = null;
+			private boolean isRunning = true;
+			
+			public BtClient(StreamConnection streamConnection)  throws IOException{	
+				this.stream = streamConnection;
+				this.out = streamConnection.openOutputStream();
+				this.in = streamConnection.openInputStream();
+				this.device = RemoteDevice.getRemoteDevice(streamConnection);
+				//this.thread = new Thread (this, "Bluetooth Client - "+getFriendlyName(true));
+				this.start();				
 			}
-			InputStream inStream=streamConnection.openInputStream();
-		    BufferedReader bReader=new BufferedReader(new InputStreamReader(inStream));
-		    String lineRead=bReader.readLine();
-		    print(lineRead);
-		    return lineRead;
-		}
-		public void send(String data) throws IOException{
-			if(streamConnection == null){
-				throw new IOException("streamConnection is null");
+			@Override
+			public void run() {
+				send("hmm??? is it me??");
+				try {
+					while(isRunning){
+						String data = recieve();
+						print("Recieved: " + data);
+						send("Data is valid");						
+					}
+					stream.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-			OutputStream outStream=streamConnection.openOutputStream();
-			PrintWriter pWriter=new PrintWriter(new OutputStreamWriter(outStream));
-			//pWriter.write("Response String from SPP Server\r\n");
-			pWriter.write(data);
-			pWriter.flush();
+			public String getBluetoothAddress(){
+				return this.device.getBluetoothAddress();
+			}
+			public String getFriendlyName(boolean b) throws IOException{
+				return this.device.getFriendlyName(b);
+			}
+			public void closeSocket(){
+				this.isRunning = false;
+				
+			}
+			public String recieve() throws IOException{
+				String lineRead = new BufferedReader(new InputStreamReader(in)).readLine();
+				return lineRead;
+			}
+			public void send(String data){
+				PrintWriter pWriter=new PrintWriter(new OutputStreamWriter(out));
+				pWriter.write(data);
+				pWriter.flush();
+			}
+			private void print(String msg){			
+				if(debug) System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
+			}
+			
 		}
 }
