@@ -44,7 +44,6 @@ public class BtServer implements Runnable{
 			print(connectionURL);
 			clients = new ArrayList<BtClient>();
 			thread = new Thread (this, "Bluetooth Server");
-			thread.start();
 		}
 		
 		public void run() {
@@ -53,7 +52,7 @@ public class BtServer implements Runnable{
 				while(isRunning){
 					print("Waiting for Clients...");
 					StreamConnection streamConnection = streamConnNotifier.acceptAndOpen();
-					addClient(streamConnection);
+					addClient(streamConnection);					
 				}
 				
 			}catch(IOException e){
@@ -78,12 +77,22 @@ public class BtServer implements Runnable{
 			streamConnNotifier = (StreamConnectionNotifier)Connector.open( connectionURL );
 			print("Server up");
 		}
+		public void stop(){
+			this.isRunning = false;				
+		}
+		public void start(){
+			thread.start();
+		}
+		
 		private void addClient(StreamConnection streamConnection) throws IOException{
+			
 			BtClient client = new BtClient(streamConnection);
-			clients.add(client);
 			print("Client connected");
 			print("Remote device address: "+client.getBluetoothAddress());
 			print("Remote device name: "+client.getFriendlyName(true));
+			clients.add(client);
+			client.start();
+			
 		}
 		public ArrayList<BtClient> getClients(){
 			return clients;
@@ -91,35 +100,52 @@ public class BtServer implements Runnable{
 		private void print(String msg){			
 			if(debug) System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
 		}
-		private class BtClient extends Thread implements Runnable{
+		private class BtClient implements Runnable{
 			private StreamConnection stream = null;
 			private RemoteDevice device = null;
 			private OutputStream out = null;
 			private InputStream in = null;
 			private boolean isRunning = true;
+			private Thread thread = null;
 			
 			public BtClient(StreamConnection streamConnection)  throws IOException{	
 				this.stream = streamConnection;
 				this.out = streamConnection.openOutputStream();
 				this.in = streamConnection.openInputStream();
 				this.device = RemoteDevice.getRemoteDevice(streamConnection);
-				//this.thread = new Thread (this, "Bluetooth Client - "+getFriendlyName(true));
-				this.start();				
+				this.thread = new Thread (this, getFriendlyName(true));		
 			}
 			@Override
-			public void run() {
-				send("hmm??? is it me??");
+			public void run() {				
+				print(thread.getName()+" started");
+				byte[] buffer = new byte[1024];				
+		        int bytes;		        
+				
 				try {
+					send("hmm??? is it me??".getBytes());
 					while(isRunning){
-						String data = recieve();
-						print("Recieved: " + data);
-						send("Data is valid");						
+						bytes = in.read(buffer);
+						byte[] data = read(buffer,bytes);
+						//behandla inkommande data...
+						
+						thread.sleep(1000);
+						//skicka svaret tillbaka
+						send("Data is valid".getBytes());						
 					}
-					stream.close();
+					
 				} catch (IOException e) {
+					e.printStackTrace();					
+				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				try {
+					stream.close();
+					print(thread.getName()+" Socket closed");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				print(thread.getName()+" stopped");
 			}
 			public String getBluetoothAddress(){
 				return this.device.getBluetoothAddress();
@@ -127,21 +153,27 @@ public class BtServer implements Runnable{
 			public String getFriendlyName(boolean b) throws IOException{
 				return this.device.getFriendlyName(b);
 			}
-			public void closeSocket(){
-				this.isRunning = false;
-				
+			public void stop(){
+				this.isRunning = false;				
 			}
-			public String recieve() throws IOException{
-				String lineRead = new BufferedReader(new InputStreamReader(in)).readLine();
-				return lineRead;
+			public void start(){
+				thread.start();
 			}
-			public void send(String data){
-				PrintWriter pWriter=new PrintWriter(new OutputStreamWriter(out));
-				pWriter.write(data);
-				pWriter.flush();
+			
+			private byte[] read(byte[] data, int bytes){
+		        byte[] rtnArr = new byte[bytes];
+		        for(int i = 0;i < bytes;i++){
+		            rtnArr[i]=data[i];
+		        }
+		        print("Recieved: " + new String(rtnArr));
+		        return rtnArr;
+		    }
+			public void send(byte[] data) throws IOException{					
+				out.write(data);
+				out.flush();
 			}
 			private void print(String msg){			
-				if(debug) System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
+				System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
 			}
 			
 		}

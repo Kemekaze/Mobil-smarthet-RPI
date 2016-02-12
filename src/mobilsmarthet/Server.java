@@ -20,7 +20,7 @@ public class Server {
 
 	public static void main(String[] args) {
 		//if(args[0] == "1")
-			BtServer.get();
+			BtServer.get().start();
 		/*else
 			BtClient.get().debugOn();*/
 	}
