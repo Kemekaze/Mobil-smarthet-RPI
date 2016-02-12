@@ -36,9 +36,10 @@ public class BtServer implements Runnable{
 	  	private boolean debug 		 = true;
 	    private Thread thread;
 	    private boolean isRunning = true;
-	    
+	    private byte[] magicWord;
 	    
 		private BtServer(){
+			magicWord = new byte[]{'a','a','n','d'};
 			uuid=new UUID("57e33d1fc1674f5aa94f5f0c58f49356", false);
 			connectionURL = "btspp://localhost:"+uuid.toString()+";authenticate=false;encrypt=false;name=LeBox";
 			print(connectionURL);
@@ -114,23 +115,25 @@ public class BtServer implements Runnable{
 				this.in = streamConnection.openInputStream();
 				this.device = RemoteDevice.getRemoteDevice(streamConnection);
 				this.thread = new Thread (this, getFriendlyName(true));		
+				device.authorize(stream);
 			}
 			@Override
-			public void run() {				
+			public void run() {
 				print(thread.getName()+" started");
 				byte[] buffer = new byte[1024];				
 		        int bytes;		        
 				
 				try {
-					send("hmm??? is it me??".getBytes());
+					//wait for confirmation
+					send("ack this".getBytes());
+					//read ack with last recieved data
+					bytes = in.read(buffer);
+					byte[] data = read(buffer,bytes);
+					//start sending data
 					while(isRunning){
-						bytes = in.read(buffer);
-						byte[] data = read(buffer,bytes);
-						//behandla inkommande data...
-						
 						thread.sleep(1000);
-						//skicka svaret tillbaka
-						send("Data is valid".getBytes());						
+						send("Data should be here".getBytes());
+						
 					}
 					
 				} catch (IOException e) {
