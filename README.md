@@ -18,6 +18,7 @@ I en byte array från klienten behandlas datan på följande sätt
 #### värden för byte[0]
 * FF Värden från alla sensorer 
 * 01 Värden från en sensor  
+
 #### värden för byte[1] 
 * 01 Värden från temperatur sensorn 
 * 02 Värden från ljus sensorn 
@@ -25,6 +26,7 @@ I en byte array från klienten behandlas datan på följande sätt
 * 04 Värden från co2 sensorn
 * 05 Värden från rörelse sensorn
 * FF Värden från alla sensorer 
+
 #### värden för byte[2-5]
 * vilke tid i unix(epoch) 
 
