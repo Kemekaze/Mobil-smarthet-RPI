@@ -1,27 +1,10 @@
-package bluetooth;
+package mobilsmarthet.bluetooth;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Vector;
-
-import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.DiscoveryAgent;
-import javax.bluetooth.DiscoveryListener;
 import javax.bluetooth.LocalDevice;
-import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;

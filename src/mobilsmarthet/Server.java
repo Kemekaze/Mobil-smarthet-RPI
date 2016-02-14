@@ -1,14 +1,8 @@
 package mobilsmarthet;
 
-import com.intel.bluetooth.*;
-import java.util.ArrayList;
-import javax.bluetooth.*;
 
-import com.phidgets.*;
-
-import api.*;
-import bluetooth.*;
-import db.DB;
+import mobilsmarthet.bluetooth.*;
+import mobilsmarthet.db.DB;
 
 
 public class Server {

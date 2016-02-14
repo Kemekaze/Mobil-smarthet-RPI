@@ -1,4 +1,4 @@
-package bluetooth;
+package mobilsmarthet.bluetooth;
 
 import java.io.Serializable;
 import java.util.List;

@@ -1,10 +1,10 @@
-package api;
+package mobilsmarthet.api;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import db.DB;
+import mobilsmarthet.db.DB;
 public class Sensor<T> {
 	/*
 	 * Phidget

@@ -5,4 +5,4 @@
  * @author elias
  *
  */
-package db;
+package mobilsmarthet.bluetooth;

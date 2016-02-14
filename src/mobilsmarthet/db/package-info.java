@@ -5,4 +5,4 @@
  * @author elias
  *
  */
-package api;
+package mobilsmarthet.db;

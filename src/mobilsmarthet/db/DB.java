@@ -1,28 +1,21 @@
-package db;
+package mobilsmarthet.db;
 
-import java.io.File;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import bluetooth.SerializableSensor;
-import mobilsmarthet.Server;
+import java.util.Map;
+
+
+import mobilsmarthet.bluetooth.SerializableSensor;
 import mobilsmarthet.Server.Sensors;
 
-import java.nio.ByteBuffer;
 
 
 

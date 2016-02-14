@@ -5,4 +5,4 @@
  * @author elias
  *
  */
-package bluetooth;
+package mobilsmarthet.api;
