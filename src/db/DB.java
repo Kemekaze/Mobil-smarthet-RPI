@@ -1,64 +1,135 @@
 package db;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import api.*;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public class DB {
-	private static List<String> files = new ArrayList<String>();
-	private static final String dir = System.getProperty("user.home")+"/.dat065/";
-	
-	public static final int SUCCESS = 1;	
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import bluetooth.SerializableSensor;
+import mobilsmarthet.Server;
+import mobilsmarthet.Server.Sensors;
+
+import java.nio.ByteBuffer;
+
+
+
+
+public class DB {	
+
 	private static DB db = null;
-	
+	private Connection con = null; 
+	private boolean debug 	= true;
 	private DB(){
-		db = this;
+		String dbUrl = "localhost";
+        String dbPort = "3306";
+        String dbName = "DAT065";
+        String dbUserName = "root";
+        String dbPassword = "notRandom";
+        String conString = "jdbc:mysql://"+dbUrl+":"+dbPort+"/" + dbName + "?user=" + dbUserName + "&password=" + dbPassword;
+        try {        
+            con = DriverManager.getConnection(conString);       
+            print("Connected to '"+dbName+"'as "+dbUserName+"@"+dbUrl);
+        } catch (SQLException ex) {         
+        	ex.printStackTrace();
+        }
+	}
+	public void close(){
+		try {
+            if (con != null) {
+                con.close();
+                con = null;
+                db = null;
+            }
+        }catch(SQLException ex) {
+        	ex.printStackTrace();
+        }
 	}
 	
 	public static DB get(){
-		return (db == null)? new DB():db; 
-	}
-
-	public void addSensors(List<Sensor> sensors) throws IOException{		
-		for(Sensor s : sensors){
-				addSensor(s);
+		if(db == null){
+			db = new DB();
 		}
+		return db;
 	}
-	public void addSensor(Sensor s) throws IOException{
-		File f = new File(dir+s.getClassName()+".db");
-		if(!f.exists()){
-			if(f.getParentFile().mkdirs())
-				f.createNewFile();
-		}
-		System.out.println(dir+s.getClassName()+".db");
-		System.out.println(f.getAbsolutePath());
-		files.add(f.getAbsolutePath());			
+	public void debugOn(){
+		debug = true;
 	}
-	public List<Integer> read(Sensor s) throws IOException{
-		if(files.size() == 0) return null;
-		String path;
-		if(files.contains(dir+s.getClassName()+".db"))
-			path =dir+s.getClassName()+".db";
-		else
-			return null;
-		ArrayList<Integer> data = new ArrayList<Integer>();
-		
-		for (String line : Files.readAllLines(Paths.get(path))) {
-			data.add(Integer.parseInt(line.split(":")[0]));
+	public void debugOff(){
+		debug = false;
+	}
+	
+	public Map<Integer,Double> getLastSensorValue(int sensor){
+		Sensors s = Sensors.match(sensor);
+		if(s == null) return null;
+		String query = "SELECT * FROM "+sensor+"LIMIT 1";
+		return getSensorValue(query);
+	}
+	public ArrayList<SerializableSensor> getSensorsValue(int time){		
+		ArrayList<SerializableSensor> list = new ArrayList<SerializableSensor>();
+		for(Sensors s : Sensors.values()){
+			list.add(
+				new SerializableSensor(
+							getSensorValue(s.getId(),time),
+							s.getId()							
+						)					
+			);
 		}
+		return list;
+	}
+	
+	public Map<Integer,Double> getSensorValue(int sensor, int time) throws NullPointerException{
+		Sensors s = Sensors.match(sensor);
+		if(s == null) return null;
+		String query = "SELECT * FROM "+s.getName()+" WHERE `time` > "+time+" ORDER BY time";
+		return getSensorValue(query);
+	}
+	
+	private Map<Integer,Double> getSensorValue(String query){
+		Map<Integer,Double> data = new HashMap<Integer,Double>();
+		try {
+            Statement st = con.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            
+            while (rs.next()) {
+            	data.put(rs.getInt(1), rs.getDouble(2));
+            }
+            rs.close();
+        	st.close();        	
+        }catch(SQLException ex) {
+        	ex.printStackTrace();
+        }
 		return data;
 	}
-	public void write(Sensor s, String data) throws IOException{
-		String path;
-		if(files.contains(dir+s.getClassName()+".db"))
-			path =dir+s.getClassName()+".db";
-		else
-			return;
-		Files.write(Paths.get(path), data.getBytes(), StandardOpenOption.APPEND);		
+	
+	public void addSensorvalue(int sensor, double value){
+		Sensors s = Sensors.match(sensor);
+		if(s == null) return;
+		String query = "INSERT INTO "+s.getName()+" (time,value)"+
+		               " VALUES ('"+Instant.now().getEpochSecond()+"','"+value+"')";
+		try {
+			Statement st = con.createStatement();
+            st.executeUpdate(query);
+            st.close();
+            print("Inserted into "+s.getName());
+        }catch(SQLException ex) {
+        	ex.printStackTrace();           
+        }
 	}
-
+	
+	private void print(String msg){			
+		if(debug) System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
+	}
 }

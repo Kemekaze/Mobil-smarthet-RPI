@@ -1,164 +1,125 @@
 package bluetooth;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import javax.bluetooth.*;
-import javax.microedition.io.*;
-public class BtClient implements DiscoveryListener, Runnable {
+import javax.bluetooth.RemoteDevice;
+import javax.microedition.io.StreamConnection;
+
+import db.DB;
+import mobilsmarthet.Server;
+
+public class BtClient implements Runnable{
 	
-    private static BtClient bt   = null;    
-    private UUID[] uuidSet 		 = new UUID[1];    
-  	private Object lock			 = new Object();
-  	private Vector devices		 = new Vector();
-  	private String connectionURL = null;
-    private DiscoveryAgent agent = null;
-    private StreamConnection streamConnection = null;
-  	private boolean debug 		 = false;
-  	private Thread thread;
-    
-	private BtClient(){
-		uuidSet[0]=new UUID("446118f08b1e11e29e960800200c9a66", false);
-		thread = new Thread (this, "Client");
+	
+	private StreamConnection stream = null;
+	private RemoteDevice device = null;
+	private OutputStream out = null;
+	private InputStream in = null;
+	private boolean isRunning = true;
+	private Thread thread = null;
+	
+	public BtClient(StreamConnection streamConnection)  throws IOException{	
+		this.stream = streamConnection;
+		this.out = streamConnection.openOutputStream();
+		this.in = streamConnection.openInputStream();
+		this.device = RemoteDevice.getRemoteDevice(streamConnection);
+		this.thread = new Thread (this, getFriendlyName(true));		
+		device.authorize(stream);
+	}
+
+	@Override
+	public void run() {
+		print(thread.getName()+" started");
+		byte[] buffer = new byte[1024];				
+        int bytes;		        
+		
+		try {			
+			while(isRunning){
+				bytes = in.read(buffer);
+				byte[] data = read(buffer,bytes);
+				
+				byte type = data[0];
+				byte sensor = data[1];
+				int time = java.nio.ByteBuffer.wrap(Arrays.copyOfRange(buffer, 2, 6)).getInt();
+				switch(type){	
+					case (byte) 0xFF:
+						send(serialize(DB.get().getSensorsValue(time)));
+						break;
+					case (byte) 0x01:
+						send(serialize(DB.get().getSensorValue((int)sensor,time)));
+						break;
+					default:
+						send(serialize(new ArrayList<SerializableSensor>(){{add(new SerializableSensor(null,-1));}}));
+						break;					
+				}								
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();					
+		}
+		try {
+			stream.close();
+			print(thread.getName()+" Socket closed");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		print(thread.getName()+" stopped");
+	}
+	
+	public String getBluetoothAddress(){
+		return this.device.getBluetoothAddress();
+	}
+	
+	public String getFriendlyName(boolean b) throws IOException{
+		return this.device.getFriendlyName(b);
+	}
+	
+	public void stop(){
+		this.isRunning = false;				
+	}
+	
+	public void start(){
 		thread.start();
 	}
 	
-	public void run() {
-		try{
-			searchDevices();
-			printDevices();
-			deviceServices(selectDevice());
-			
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+	private byte[] read(byte[] data, int bytes){
+        byte[] rtnArr = new byte[bytes];
+        for(int i = 0;i < bytes;i++){
+            rtnArr[i]=data[i];
+        }
+        print("Recieved: " + new String(rtnArr));
+        return rtnArr;
+    }
+	public void send(byte[] data) throws IOException{					
+		out.write(data);
+		out.flush();
+	}
+	
+	public static byte[] serialize(Object obj) throws IOException {
+	    ByteArrayOutputStream out = new ByteArrayOutputStream();
+	    ObjectOutputStream os = new ObjectOutputStream(out);
+	    os.writeObject(obj);
+	    return out.toByteArray();
+	}
+	public static Object deserialize(byte[] data) throws IOException, ClassNotFoundException {
+	    ByteArrayInputStream in = new ByteArrayInputStream(data);
+	    ObjectInputStream is = new ObjectInputStream(in);
+	    return is.readObject();
+	}			
+	
+	private void print(String msg){			
+		System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
 		
 	}
-	public static BtClient get(){
-		return (bt == null)?bt = new BtClient():bt;
-	}
-	public void debugOn(){
-		debug = true;
-	}
-	public void debugOff(){
-		debug = false;
-	}
-	private Vector getDevices(){
-		return (devices.size()>0)? devices: null;
-	}
-	private void printDevices() throws IOException{
-		int deviceCount = devices.size();
-	    if(deviceCount <= 0){
-	        print("No Devices Found .");
-	    }
-	    else{
-	        print("Bluetooth Devices: ");
-	        for (int i = 0; i <deviceCount; i++) {
-	            RemoteDevice remoteDevice=(RemoteDevice)devices.elementAt(i);
-	            print((i+1)+". "+remoteDevice.getBluetoothAddress()+" ("+remoteDevice.getFriendlyName(true)+")");
-	        }
-	    }
-	    
-	}
-	private int selectDevice() throws IOException{
-		 print("Choose Device index: ");
-		 BufferedReader bReader=new BufferedReader(new InputStreamReader(System.in));
-		 String chosenIndex=bReader.readLine();
-		 return Integer.parseInt(chosenIndex.trim());
-	}
-	private void searchDevices() throws BluetoothStateException{
 
-	    LocalDevice localDevice = LocalDevice.getLocalDevice();
-	    print("Address: "+localDevice.getBluetoothAddress());
-	    print("Name: "+localDevice.getFriendlyName());
-
-	    agent = localDevice.getDiscoveryAgent();
-	    print("Starting device inquiry...");
-	    agent.startInquiry(DiscoveryAgent.GIAC, bt);
-	    try {
-	        synchronized(lock){
-	            lock.wait();
-	        }
-	    }
-	    catch (InterruptedException e) {
-	        e.printStackTrace();
-	    }
-	}
-	private void deviceServices(int dev) throws IOException{
-		RemoteDevice remoteDevice=(RemoteDevice)devices.elementAt(dev-1);
-	    print("\nSearching for service...");
-	    agent.searchServices(null,uuidSet,remoteDevice,bt);
-
-	    try {
-	        synchronized(lock){
-	            lock.wait();
-	        }
-	    }
-	    catch (InterruptedException e) {
-	        e.printStackTrace();
-	    }
-
-	    if(connectionURL==null){
-	        print("Device does not support Simple SPP Service.");
-	    }else{
-	    	streamConnection=(StreamConnection)Connector.open(connectionURL);
-	    }
-	}
-	public void sendData() throws IOException{
-		if(streamConnection == null){
-			throw new IOException("streamConnection is null");
-		}
-	    OutputStream outStream=streamConnection.openOutputStream();
-	    PrintWriter pWriter=new PrintWriter(new OutputStreamWriter(outStream));
-	    pWriter.write("Test String from SPP Client\r\n");
-	    pWriter.flush();
-
-	}
-	public String receiveData() throws IOException{
-		if(streamConnection == null){
-			throw new IOException("streamConnection is null");
-		}
-		InputStream inStream=streamConnection.openInputStream();
-	    BufferedReader bReader2=new BufferedReader(new InputStreamReader(inStream));
-	    String lineRead=bReader2.readLine();
-	    print(lineRead);
-	    return lineRead;
-	}
-	public void deviceDiscovered(RemoteDevice btDevice, DeviceClass cod) {
-	    if(!devices.contains(btDevice)){
-	        devices.addElement(btDevice);
-	    }
-	}
-
-	public void servicesDiscovered(int transID, ServiceRecord[] servRecord) {
-	    if(servRecord!=null && servRecord.length>0){
-	        connectionURL=servRecord[0].getConnectionURL(0,false);
-	    }
-	    synchronized(lock){
-	        lock.notify();
-	    }
-	}
-
-	public void serviceSearchCompleted(int transID, int respCode) {
-	    synchronized(lock){
-	        lock.notify();
-	    }
-	}
-
-	public void inquiryCompleted(int discType) {
-	    synchronized(lock){
-	    	print("Device Inquiry Completed. ");
-	        lock.notify();
-	    }
-	}
-	private void print(String msg){
-		if(debug) System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
-	}
 	
 }

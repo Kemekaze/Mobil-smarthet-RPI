@@ -27,8 +27,8 @@ public class Sensor<T> {
 		this.cls = cls;
 		try{				
 			this.sensor = cls.newInstance();
-			DB.get().addSensor(this);
-		}catch(InstantiationException | IllegalAccessException | IOException e){
+			//DB.get().addSensor(this);
+		}catch(InstantiationException | IllegalAccessException /*| IOException*/ e){
 			e.printStackTrace();
 		}
 		
@@ -50,11 +50,12 @@ public class Sensor<T> {
 	}
 	
 	protected void write(String data) throws IOException{
-		DB.get().write(this, data);
+		//DB.get().write(this, data);
 		
 	}
 	public List<Integer> read() throws IOException{
-		return DB.get().read(this);
+		//return DB.get().read(this);
+		return null;
 	}
 
 	
