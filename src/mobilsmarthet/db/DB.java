@@ -83,15 +83,15 @@ public class DB {
 		return list;
 	}
 	
-	public Map<Integer,Double> getSensorValue(int sensor, int time) throws NullPointerException{
+	public HashMap<Integer,Double> getSensorValue(int sensor, int time) throws NullPointerException{
 		Sensors s = Sensors.match(sensor);
 		if(s == null) return null;
 		String query = "SELECT * FROM "+s.getName()+" WHERE `time` > "+time+" ORDER BY time";
 		return getSensorValue(query);
 	}
 	
-	private Map<Integer,Double> getSensorValue(String query){
-		Map<Integer,Double> data = new HashMap<Integer,Double>();
+	private HashMap<Integer,Double> getSensorValue(String query){
+		HashMap<Integer,Double> data = new HashMap<Integer,Double>();
 		try {
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(query);
@@ -106,10 +106,33 @@ public class DB {
         }
 		return data;
 	}
-	public void addSensorvalue(String sensor, double value){
 
-		String query = "INSERT INTO "+sensor+" (time,value)"+
-		               " VALUES ('"+Instant.now().getEpochSecond()+"','"+value+"')";
+	public void addSensorvalue(int sensor, double value){
+		Sensors s = Sensors.match(sensor);
+		if(s == null) return;
+		addSensorvalue(s.getName(), new double[]{value});
+	}
+	private void addSensorvalue(String sensor, double value){
+		addSensorvalue(sensor, new double[]{value});
+	}
+	public void addSensorvalue(int sensor, double[] values){
+		Sensors s = Sensors.match(sensor);
+		if(s == null) return;
+		addSensorvalue(s.getName(),values);
+	}
+	
+	public void addSensorvalue(String sensor, double[] values){
+		String query  = "INSERT INTO "+sensor;
+		String params = " (time";
+		String vals = ") VALUES ('"+Instant.now().getEpochSecond()+"'";
+		int i = 0;
+		for(double val: values){
+			params += ",value"+((i>0)?i:"");
+			vals   += ",'"+val+"'";
+		}
+		query+=params+vals+")";
+		/*String query = "INSERT INTO "+sensor+" (time,value)"+
+		               " VALUES ('"+Instant.now().getEpochSecond()+"','"+value+"')";*/
 		try {
 			Statement st = con.createStatement();
             st.executeUpdate(query);
@@ -120,11 +143,7 @@ public class DB {
         }
 	}
 	
-	public void addSensorvalue(int sensor, double value){
-		Sensors s = Sensors.match(sensor);
-		if(s == null) return;
-		addSensorvalue(s.getName(), value);
-	}
+	
 	
 	private void print(String msg){			
 		if(debug) System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
