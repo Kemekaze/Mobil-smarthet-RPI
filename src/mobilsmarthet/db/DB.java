@@ -106,20 +106,24 @@ public class DB {
         }
 		return data;
 	}
-	
-	public void addSensorvalue(int sensor, double value){
-		Sensors s = Sensors.match(sensor);
-		if(s == null) return;
-		String query = "INSERT INTO "+s.getName()+" (time,value)"+
+	public void addSensorvalue(String sensor, double value){
+
+		String query = "INSERT INTO "+sensor+" (time,value)"+
 		               " VALUES ('"+Instant.now().getEpochSecond()+"','"+value+"')";
 		try {
 			Statement st = con.createStatement();
             st.executeUpdate(query);
             st.close();
-            print("Inserted into "+s.getName());
+            print("Inserted into "+ sensor);
         }catch(SQLException ex) {
         	ex.printStackTrace();           
         }
+	}
+	
+	public void addSensorvalue(int sensor, double value){
+		Sensors s = Sensors.match(sensor);
+		if(s == null) return;
+		addSensorvalue(s.getName(), value);
 	}
 	
 	private void print(String msg){			

@@ -1,29 +1,101 @@
 package mobilsmarthet.api;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
+import mobilsmarthet.db.DB;
+
+import com.mysql.fabric.xmlrpc.base.Array;
 import com.yoctopuce.YoctoAPI.*;
 
-public class YoctopuceSensor<T extends YSensor> extends Sensor{
-	
+import mobilsmarthet.api.*;
 
-	private static final String DEBUG_PREFIX = "Yocto";
-	private static boolean isInitialized;
-	public YoctopuceSensor(Class<T> cls){
-		this(cls,false);
+public class YoctopuceSensor implements Runnable{
+	
+	
+	private boolean isRunning = false ,isInitialized = true;
+	private ArrayList<YSensor> sensors = new ArrayList<>();
+	private static int interval = 2000;
+	private Thread t;
+	
+	/**
+	 *  creates an list of all connected yocto sensors.
+	 */
+	public YoctopuceSensor(){
+		 
+		try {
+	         
+			init();
+			System.out.println("init: "+ isInitialized);
+	        } catch (YAPI_Exception ex) {
+	            System.out.println("Cannot contact VirtualHub on 127.0.0.1 (" + ex.getLocalizedMessage() + ")");
+	            System.out.println("Ensure that the VirtualHub application is running");
+	        }
+		t = new Thread(this);
+
 	}
-	public YoctopuceSensor(Class<T> cls, boolean debug){
-		super(cls,DEBUG_PREFIX,debug);
-		if(!isInitialized ){
-			try {
-				if(YAPI.SUCCESS == YAPI.RegisterHub("127.0.0.1")){
-					isInitialized= true;
-					print("Initialized");
+	
+	/**
+	 * method registers the virtual hub and adds all the connected yoctopuce sensors to sensors array.
+	 * @return true if all three sensors are found and added to sensors else false
+	 * @throws YAPI_Exception
+	 */
+	private boolean init() throws YAPI_Exception{
+		// setup the API to use local VirtualHub
+        YAPI.RegisterHub("127.0.0.1");
+        YModule module = YModule.FirstModule();
+        
+        while(module != null){
+        	
+        	if(!module.getProductName().equals("VirtualHub")){
+            	System.out.println("sensor added: " + module.get_logicalName());
+            	sensors.add(YSensor.FindSensor(module.get_logicalName()));
+        	}
+    		module = module.nextModule();
+        }
+        
+        if(sensors.toArray().length == 3) return isInitialized = true; else return false;
+	}
+	
+	/**
+	 * writes the current value of the yocto sensors to corresponding table in db.
+	 * 
+	 */
+	@Override
+	public void run(){
+		while(isRunning){
+			for (int i = 0; i < sensors.size(); i++) {
+				try {
+					DB.get().addSensorvalue(sensors.get(i).getLogicalName(), sensors.get(i).get_currentValue());
+					System.out.println("sensor: " + sensors.get(i).get_module().get_logicalName()+"value: "+sensors.get(i).get_currentValue() );
+				} catch (YAPI_Exception e) {
+					//one or more sensors is offline
+					e.printStackTrace();
 				}
-			} catch (YAPI_Exception e) {
+
+			}
+			try {
+
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-	}	
+
+	}
+	/**
+	 * stops the thread that update the yocto sensors 
+	 */
+	public void stop(){
+		isRunning = false;
+	}
+	/**
+	 * starts the the thread that update the yocto sensors 
+	 */
+	public void start(){
+		isRunning = true; 
+		t.start();
+	}
+}	
 	
-}
+
