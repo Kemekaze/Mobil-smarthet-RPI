@@ -1,6 +1,7 @@
 package mobilsmarthet;
 
 
+import mobilsmarthet.api.YoctopuceSensor;
 import mobilsmarthet.bluetooth.*;
 import mobilsmarthet.db.DB;
 
@@ -37,14 +38,18 @@ public class Server {
 	private final DB db ;
 	private final BtServer btServer;
 	public Server(){
+
 		db = DB.get();
 		btServer = BtServer.get();
+
 	}
 	
 
 	public static void main(String[] args) {
 		Server server = new Server();
-
+		YoctopuceSensor yocto = new YoctopuceSensor();
+		yocto.start();
+		
 
 	}
 
