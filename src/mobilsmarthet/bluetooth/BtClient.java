@@ -49,17 +49,22 @@ public class BtClient implements Runnable{
 				byte type = data[0];
 				byte sensor = data[1];
 				int time = java.nio.ByteBuffer.wrap(Arrays.copyOfRange(buffer, 2, 6)).getInt();
+				byte [] request;
 				switch(type){	
 					case (byte) 0xFF:
-						send(serialize(DB.get().getSensorsValue(time)));
+						request = serialize(DB.get().getSensorsValue(time));
 						break;
 					case (byte) 0x01:
-						send(serialize(DB.get().getSensorValue((int)sensor,time)));
+						request = serialize(DB.get().getSensorValue((int)sensor,time));
 						break;
 					default:
-						send(serialize(new ArrayList<SerializableSensor>(){{add(new SerializableSensor(null,-1));}}));
+						ArrayList<SerializableSensor> arr= new ArrayList<SerializableSensor>();
+						SerializableSensor s = new SerializableSensor(null,-1);
+						arr.add(s);
+						request = serialize(arr);
 						break;					
-				}								
+				}
+				send(request);								
 			}
 			
 		} catch (IOException e) {
