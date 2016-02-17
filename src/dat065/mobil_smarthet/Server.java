@@ -1,9 +1,10 @@
-package mobilsmarthet;
+package dat065.mobil_smarthet;
 
 
-import mobilsmarthet.api.YoctopuceSensor;
-import mobilsmarthet.bluetooth.*;
-import mobilsmarthet.db.DB;
+import dat065.mobil_smarthet.api.YoctopuceSensor;
+import dat065.mobil_smarthet.bluetooth.*;
+import dat065.mobil_smarthet.db.DB;
+import dat065.mobil_smarthet.db.Populate;
 
 
 public class Server {
@@ -41,16 +42,15 @@ public class Server {
 
 		db = DB.get();
 		btServer = BtServer.get();
+		//YoctopuceSensor yocto = new YoctopuceSensor();
+		//yocto.start();
 
 	}
 	
 
 	public static void main(String[] args) {
+		//Populate.populateSensor(Sensors.TEMPERATURE.getId(), 10, 20, 25);
 		Server server = new Server();
-		YoctopuceSensor yocto = new YoctopuceSensor();
-		yocto.start();
-		
-
 	}
 
 }

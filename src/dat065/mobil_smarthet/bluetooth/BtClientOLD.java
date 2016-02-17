@@ -1,4 +1,4 @@
-package mobilsmarthet.bluetooth;
+package dat065.mobil_smarthet.bluetooth;
 
 import java.io.BufferedReader;
 import java.io.IOException;

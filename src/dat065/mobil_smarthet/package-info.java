@@ -5,4 +5,4 @@
  * @author elias
  *
  */
-package mobilsmarthet.db;
+package dat065.mobil_smarthet;

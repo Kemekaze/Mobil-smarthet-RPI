@@ -1,4 +1,4 @@
-package mobilsmarthet.db;
+package dat065.mobil_smarthet.db;
 
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -12,9 +12,8 @@ import java.util.HashMap;
 
 import java.util.Map;
 
-
-import mobilsmarthet.bluetooth.SerializableSensor;
-import mobilsmarthet.Server.Sensors;
+import dat065.mobil_smarthet.Server.Sensors;
+import dat065.mobil_smarthet.bluetooth.SerializableSensor;
 
 
 
@@ -62,32 +61,38 @@ public class DB {
 	}
 	public void debugOff(){
 		debug = false;
-	}
+	}	
 	
-	public Map<Integer,Double> getLastSensorValue(int sensor){
-		Sensors s = Sensors.match(sensor);
-		if(s == null) return null;
-		String query = "SELECT * FROM "+sensor+"LIMIT 1";
-		return getSensorValue(query);
-	}
 	public ArrayList<SerializableSensor> getSensorsValue(int time){		
 		ArrayList<SerializableSensor> list = new ArrayList<SerializableSensor>();
 		for(Sensors s : Sensors.values()){
-			list.add(
-				new SerializableSensor(
-							getSensorValue(s.getId(),time),
-							s.getId()							
-						)					
-			);
+			SerializableSensor ss = getSensorValue(s.getId(),time);		
+			list.add(ss);
 		}
 		return list;
 	}
+	public ArrayList<SerializableSensor> toArrayList(SerializableSensor sensor){
+		ArrayList<SerializableSensor> list = new ArrayList<SerializableSensor>();	
+		list.add(sensor);		
+		return list;
+	}
 	
-	public HashMap<Integer,Double> getSensorValue(int sensor, int time) throws NullPointerException{
+	public SerializableSensor getLastSensorValue(int sensor){
+		Sensors s = Sensors.match(sensor);
+		if(s == null) return null;
+		String query = "SELECT * FROM "+sensor+"LIMIT 1";
+		HashMap<Integer,Double> vals = getSensorValue(query);
+		SerializableSensor ss = new SerializableSensor(vals,s.getId());
+		return ss;
+	}
+	
+	public SerializableSensor getSensorValue(int sensor, int time) throws NullPointerException{
 		Sensors s = Sensors.match(sensor);
 		if(s == null) return null;
 		String query = "SELECT * FROM "+s.getName()+" WHERE `time` > "+time+" ORDER BY time";
-		return getSensorValue(query);
+		HashMap<Integer,Double> vals = getSensorValue(query);
+		SerializableSensor ss = new SerializableSensor(vals,s.getId());
+		return ss;
 	}
 	
 	private HashMap<Integer,Double> getSensorValue(String query){
@@ -112,7 +117,7 @@ public class DB {
 		if(s == null) return;
 		addSensorvalue(s.getName(), new double[]{value});
 	}
-	private void addSensorvalue(String sensor, double value){
+	public void addSensorvalue(String sensor, double value){
 		addSensorvalue(sensor, new double[]{value});
 	}
 	public void addSensorvalue(int sensor, double[] values){
@@ -142,7 +147,24 @@ public class DB {
         	ex.printStackTrace();           
         }
 	}
-	
+	public boolean emptySensorValues(int sensor){
+		Sensors s = Sensors.match(sensor);
+		if(s == null) return false;
+		return emptySensorValues(s.getName());
+	}
+	public boolean emptySensorValues(String sensor){
+		String query = "TRUNCATE TABLE "+sensor;
+		try {
+			Statement st = con.createStatement();
+            st.executeUpdate(query);
+            st.close();
+            print("Truncated "+ sensor);
+            return true;
+        }catch(SQLException ex) {
+        	ex.printStackTrace();  
+        	return false;
+        }
+	}	
 	
 	
 	private void print(String msg){			

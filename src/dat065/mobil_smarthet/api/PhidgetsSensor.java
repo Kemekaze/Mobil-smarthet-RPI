@@ -1,4 +1,4 @@
-package mobilsmarthet.api;
+package dat065.mobil_smarthet.api;
 
 import java.io.IOException;
 

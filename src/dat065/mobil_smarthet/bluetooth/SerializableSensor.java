@@ -1,4 +1,4 @@
-package mobilsmarthet.bluetooth;
+package dat065.mobil_smarthet.bluetooth;
 
 import java.io.Serializable;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package mobilsmarthet.bluetooth;
+package dat065.mobil_smarthet.bluetooth;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 import javax.bluetooth.RemoteDevice;
 import javax.microedition.io.StreamConnection;
 
-import mobilsmarthet.db.DB;
+import dat065.mobil_smarthet.db.DB;
 
 
 public class BtClient implements Runnable{
@@ -37,31 +37,37 @@ public class BtClient implements Runnable{
 
 	@Override
 	public void run() {
-		print(thread.getName()+" started");
+		print("Connected");
 		byte[] buffer = new byte[1024];				
         int bytes;		        
 		
 		try {			
 			while(isRunning){
 				bytes = in.read(buffer);
-				byte[] data = read(buffer,bytes);
+				byte[] data = null;
+				try{
+					data = read(buffer,bytes);
+				}catch(NegativeArraySizeException e){
+					print("Disconnected");
+					stop();
+					continue;
+				}
 				
 				byte type = data[0];
 				byte sensor = data[1];
 				int time = java.nio.ByteBuffer.wrap(Arrays.copyOfRange(buffer, 2, 6)).getInt();
+				print("Time: "+time);
 				byte [] request;
 				switch(type){	
 					case (byte) 0xFF:
 						request = serialize(DB.get().getSensorsValue(time));
 						break;
 					case (byte) 0x01:
-						request = serialize(DB.get().getSensorValue((int)sensor,time));
+						request = serialize(DB.get().toArrayList(DB.get().getSensorValue((int)sensor,time)));
 						break;
 					default:
-						ArrayList<SerializableSensor> arr= new ArrayList<SerializableSensor>();
 						SerializableSensor s = new SerializableSensor(null,-1);
-						arr.add(s);
-						request = serialize(arr);
+						request = serialize(DB.get().toArrayList(s));
 						break;					
 				}
 				send(request);								
@@ -72,11 +78,10 @@ public class BtClient implements Runnable{
 		}
 		try {
 			stream.close();
-			print(thread.getName()+" Socket closed");
+			print("Socket closed");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		print(thread.getName()+" stopped");
 	}
 	
 	public String getBluetoothAddress(){
@@ -95,15 +100,23 @@ public class BtClient implements Runnable{
 		thread.start();
 	}
 	
-	private byte[] read(byte[] data, int bytes){
+	private byte[] read(byte[] data, int bytes) throws NegativeArraySizeException{
+		
+		
         byte[] rtnArr = new byte[bytes];
         for(int i = 0;i < bytes;i++){
             rtnArr[i]=data[i];
         }
-        print("Recieved: " + new String(rtnArr));
+        StringBuilder sb = new StringBuilder();
+        for (byte b : rtnArr) {
+            sb.append(String.format("%02X ", b));
+        }
+        
+        print("Recieved: " + sb.toString());
         return rtnArr;
     }
-	public void send(byte[] data) throws IOException{					
+	public void send(byte[] data) throws IOException{
+		print("Sending: "+ data.length);
 		out.write(data);
 		out.flush();
 	}
@@ -121,7 +134,7 @@ public class BtClient implements Runnable{
 	}			
 	
 	private void print(String msg){			
-		System.out.println("["+this.getClass().getSimpleName()+"] "+msg);
+		System.out.println("["+this.getClass().getSimpleName()+" - "+thread.getName()+"] "+msg);
 		
 	}
 

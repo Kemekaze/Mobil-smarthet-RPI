@@ -1,14 +1,15 @@
-package mobilsmarthet.api;
+package dat065.mobil_smarthet.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-import mobilsmarthet.db.DB;
+
 
 import com.mysql.fabric.xmlrpc.base.Array;
 import com.yoctopuce.YoctoAPI.*;
 
-import mobilsmarthet.api.*;
+import dat065.mobil_smarthet.api.*;
+import dat065.mobil_smarthet.db.DB;
 
 public class YoctopuceSensor implements Runnable{
 	
@@ -74,12 +75,7 @@ public class YoctopuceSensor implements Runnable{
 				}
 
 			}
-			try {
-
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		
 		}
 
 	}

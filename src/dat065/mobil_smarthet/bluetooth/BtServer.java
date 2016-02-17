@@ -1,4 +1,4 @@
-package mobilsmarthet.bluetooth;
+package dat065.mobil_smarthet.bluetooth;
 
 
 import java.io.IOException;
@@ -76,7 +76,7 @@ public class BtServer implements Runnable{
 	
 	private void addClient(StreamConnection streamConnection) throws IOException{		
 		BtClient client = new BtClient(streamConnection);
-		print("Client connected");
+		print("Client connecting...");
 		print("Remote device address: "+client.getBluetoothAddress());
 		print("Remote device name: "+client.getFriendlyName(true));
 		clients.add(client);
