@@ -35,8 +35,9 @@ public class BtServer implements Runnable{
 	public void run() {
 		try{				
 			init();
+			print("Waiting for Clients...");
 			while(isRunning){
-				print("Waiting for Clients...");
+				
 				StreamConnection streamConnection = streamConnNotifier.acceptAndOpen();
 				addClient(streamConnection);					
 			}

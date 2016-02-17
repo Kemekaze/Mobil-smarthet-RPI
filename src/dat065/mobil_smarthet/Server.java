@@ -13,8 +13,8 @@ public class Server {
 		TEMPERATURE(0x01,"Temperature"),
 		LIGHT(0x02,"Light"),
 		AUDIO(0x03,"Audio"),
-		CO2(0x04,"Audio"),
-		MOTION(0x01,"Motion");
+		CO2(0x04,"C02"),
+		MOTION(0x05,"Motion");
 		
 		private final int id;
 		private final String name;		
