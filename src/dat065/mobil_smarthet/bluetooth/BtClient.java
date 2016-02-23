@@ -66,7 +66,7 @@ public class BtClient implements Runnable{
 						request = serialize(DB.get().toArrayList(DB.get().getSensorValue((int)sensor,time)));
 						break;
 					default:
-						SerializableSensor s = new SerializableSensor(null,-1);
+						SerializableSensor s = new SerializableSensor(null,0);
 						request = serialize(DB.get().toArrayList(s));
 						break;					
 				}
@@ -118,7 +118,6 @@ public class BtClient implements Runnable{
 	public void send(byte[] data) throws IOException{
 		print("Sending: "+ data.length);
 		out.write(data);
-		out.flush();
 	}
 	
 	public static byte[] serialize(Object obj) throws IOException {

@@ -11,9 +11,9 @@ public class SerializableSensor implements Serializable{
 	private HashMap<Integer,Double> data;	
 	
 	public SerializableSensor(HashMap<Integer,Double> data, int sensor) throws IndexOutOfBoundsException{
-		if( 4 >= sensor && sensor >= 0  )
+		if( 5 >= sensor && sensor >= 0  )
 			this.sensor = sensor;
-		else throw new IndexOutOfBoundsException("Sensor value must be between 0-4");
+		else throw new IndexOutOfBoundsException("Sensor value must be between 0-5: "+sensor);
 		this.data = data;
 	}
 	public SerializableSensor(){
