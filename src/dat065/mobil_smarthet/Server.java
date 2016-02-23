@@ -1,6 +1,7 @@
 package dat065.mobil_smarthet;
 
 
+import dat065.mobil_smarthet.api.PhidgetsSensor;
 import dat065.mobil_smarthet.api.YoctopuceSensor;
 import dat065.mobil_smarthet.bluetooth.*;
 import dat065.mobil_smarthet.db.DB;
@@ -36,15 +37,15 @@ public class Server {
 		
 	}
 	
-	private final DB db ;
-	private final BtServer btServer;
+	private DB db ;
+	private BtServer btServer;
 	public Server(){
 
-		db = DB.get();
-		btServer = BtServer.get();
+		//db = DB.get();
+		//btServer = BtServer.get();
 		//YoctopuceSensor yocto = new YoctopuceSensor();
 		//yocto.start();
-
+		PhidgetsSensor phidget = new PhidgetsSensor();
 	}
 	
 
