@@ -37,16 +37,15 @@ public class Server {
 		
 	}
 	
-	private final DB db ;
-	private final BtServer btServer;
+	private DB db ;
+	private BtServer btServer;
 	public Server(){
 
-		db = DB.get();
-		btServer = BtServer.get();
+		//db = DB.get();
+		//btServer = BtServer.get();
 		//YoctopuceSensor yocto = new YoctopuceSensor();
 		//yocto.start();
 		//PhidgetsSensor phidget = new PhidgetsSensor();
-
 	}
 	
 

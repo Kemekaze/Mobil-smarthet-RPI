@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import com.mysql.fabric.xmlrpc.base.Array;
 import com.phidgets.*;
 import com.phidgets.event.*;
-
 import dat065.mobil_smarthet.Server.Sensors;
 import dat065.mobil_smarthet.api.*;
 import dat065.mobil_smarthet.db.DB;
@@ -114,7 +113,7 @@ public class PhidgetsSensor{
 					double tempdB = Math.round( 16.801*Math.log( sensorChangeEvent.getValue()) +9.872 );
 					if((lastdB-tempdB) > soundSensitivity){
 						/*
-						 * DB.get().addSensorvalue(Sensors.AUDIO.getName(), lastdB); <<------
+						 * DB.get().addSensorvalue(Sensors.AUDIO.getName(), tempdB);
 						 */
 						System.out.println(" SOUND: "+(int) tempdB);
 					}
@@ -127,7 +126,7 @@ public class PhidgetsSensor{
 				}
 			}
 		});
-		
+
 	}	
 	/**
 	 * sets the sensitivity for which changes that going to be written the the DB.
@@ -136,7 +135,7 @@ public class PhidgetsSensor{
 	public void setSoundSensitivity(double sensitivity){
 		soundSensitivity = sensitivity;
 	}
-	
+
 	/**
 	 * sets the rate in which the motion sensor reads.
 	 * @param datarate
@@ -148,7 +147,4 @@ public class PhidgetsSensor{
 			e.printStackTrace();
 		}
 	}
-	
-	
 }	
-	

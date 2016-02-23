@@ -1,16 +1,13 @@
 package dat065.mobil_smarthet.db;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import java.sql.Connection;
 import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import java.util.Map;
 
 import dat065.mobil_smarthet.Server.Sensors;
 import dat065.mobil_smarthet.bluetooth.SerializableSensor;
