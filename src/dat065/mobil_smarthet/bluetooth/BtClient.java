@@ -55,7 +55,7 @@ public class BtClient implements Runnable{
 				
 				byte type = data[0];
 				byte sensor = data[1];
-				int time = java.nio.ByteBuffer.wrap(Arrays.copyOfRange(buffer, 2, 6)).getInt();
+				long time = java.nio.ByteBuffer.wrap(Arrays.copyOfRange(buffer, 2, 10)).getLong();
 				print("Time: "+time);
 				byte [] request;
 				switch(type){	

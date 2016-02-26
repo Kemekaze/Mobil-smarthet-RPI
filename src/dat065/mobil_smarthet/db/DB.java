@@ -60,7 +60,7 @@ public class DB {
 		debug = false;
 	}	
 	
-	public ArrayList<SerializableSensor> getSensorsValue(int time){		
+	public ArrayList<SerializableSensor> getSensorsValue(Long time){		
 		ArrayList<SerializableSensor> list = new ArrayList<SerializableSensor>();
 		for(Sensors s : Sensors.values()){
 			SerializableSensor ss = getSensorValue(s.getId(),time);		
@@ -78,28 +78,28 @@ public class DB {
 		Sensors s = Sensors.match(sensor);
 		if(s == null) return null;
 		String query = "SELECT * FROM "+sensor+"LIMIT 1";
-		HashMap<Integer,Double> vals = getSensorValue(query);
+		HashMap<Long,Double> vals = getSensorValue(query);
 		SerializableSensor ss = new SerializableSensor(vals,s.getId());
 		return ss;
 	}
 	
-	public SerializableSensor getSensorValue(int sensor, int time) throws NullPointerException{
+	public SerializableSensor getSensorValue(int sensor, Long time) throws NullPointerException{
 		Sensors s = Sensors.match(sensor);
 		if(s == null) return null;
 		String query = "SELECT * FROM "+s.getName()+" WHERE `time` > "+time+" ORDER BY time";
-		HashMap<Integer,Double> vals = getSensorValue(query);
+		HashMap<Long,Double> vals = getSensorValue(query);
 		SerializableSensor ss = new SerializableSensor(vals,s.getId());
 		return ss;
 	}
 	
-	private HashMap<Integer,Double> getSensorValue(String query){
-		HashMap<Integer,Double> data = new HashMap<Integer,Double>();
+	private HashMap<Long,Double> getSensorValue(String query){
+		HashMap<Long,Double> data = new HashMap<Long,Double>();
 		try {
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery(query);
             
             while (rs.next()) {
-            	data.put(rs.getInt(1), rs.getDouble(2));
+            	data.put(rs.getLong(1), rs.getDouble(2));
             }
             rs.close();
         	st.close();        	
@@ -126,13 +126,15 @@ public class DB {
 	public void addSensorvalue(String sensor, double[] values){
 		String query  = "INSERT INTO "+sensor;
 		String params = " (time";
-		String vals = ") VALUES ('"+Instant.now().getEpochSecond()+"'";
-		int i = 0;
+		String vals = ") VALUES ('"+System.currentTimeMillis()+"'";
+		int i = 1;
 		for(double val: values){
-			params += ",value"+((i>0)?i:"");
+			params += ",value"+((i>1)?i:"");
 			vals   += ",'"+val+"'";
-		}
+			i++;
+		}		
 		query+=params+vals+")";
+		//print(query);
 		/*String query = "INSERT INTO "+sensor+" (time,value)"+
 		               " VALUES ('"+Instant.now().getEpochSecond()+"','"+value+"')";*/
 		try {

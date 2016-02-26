@@ -83,18 +83,18 @@ public class PhidgetsSensor{
 				int j;
 				for(j=0;j<sde.getData().length;j++)
 				{
-					if(sde.getData()[j].getAcceleration().length>0)
-					{
-						/*
+					if(sde.getData()[j].getAcceleration().length>0){
+						
 						DB.get().addSensorvalue(Sensors.MOTION.getName(), new double[]{ 
 								Math.round((sde.getData()[j].getAcceleration()[0]) *100), 
 								Math.round((sde.getData()[j].getAcceleration()[1]) *100),
 								Math.round((sde.getData()[j].getAcceleration()[2]) *100)});
-						*/
 						
-						System.out.println("X: " + Math.round((sde.getData()[j].getAcceleration()[0]) *100) 
+						
+						/*System.out.println("X: " + Math.round((sde.getData()[j].getAcceleration()[0]) *100) 
 										+ " Y: " + Math.round((sde.getData()[j].getAcceleration()[1]) *100)
 										+ " Z: " + Math.round((sde.getData()[j].getAcceleration()[2]) *100) ); //Z not needed?
+					*/
 					}
 				}
 
@@ -111,11 +111,13 @@ public class PhidgetsSensor{
 				try
 				{
 					double tempdB = Math.round( 16.801*Math.log( sensorChangeEvent.getValue()) +9.872 );
-					if((lastdB-tempdB) > soundSensitivity){
-						/*
-						 * DB.get().addSensorvalue(Sensors.AUDIO.getName(), tempdB);
-						 */
-						System.out.println(" SOUND: "+(int) tempdB);
+					if((lastdB-tempdB) > soundSensitivity && sensorChangeEvent.getValue() != 0){
+						
+						 DB.get().addSensorvalue(Sensors.AUDIO.getName(), lastdB);
+						 Thread.sleep(5);
+						 DB.get().addSensorvalue(Sensors.AUDIO.getName(), tempdB);
+						 
+						//System.out.println(" SOUND: "+(int) tempdB);
 					}
 					lastdB = tempdB;
 	

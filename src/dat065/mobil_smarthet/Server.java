@@ -50,7 +50,6 @@ public class Server {
 	
 
 	public static void main(String[] args) {
-		Populate.populateSensor(Sensors.TEMPERATURE.getId(), 10, 20, 25);
 		Server server = new Server();
 	}
 
