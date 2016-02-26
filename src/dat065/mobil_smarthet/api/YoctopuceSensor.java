@@ -1,7 +1,10 @@
 package dat065.mobil_smarthet.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
+
+
+
+
 
 
 
@@ -16,7 +19,7 @@ public class YoctopuceSensor implements Runnable{
 	
 	private boolean isRunning = false ,isInitialized = true;
 	private ArrayList<YSensor> sensors = new ArrayList<>();
-	private static int interval = 2000;
+	private long interval = 10000;
 	private Thread t;
 	
 	/**
@@ -27,7 +30,7 @@ public class YoctopuceSensor implements Runnable{
 		try {
 	         
 			init();
-			System.out.println("init: "+ isInitialized);
+			System.out.println("init "+ sensors.size()+ "sensors :"+ isInitialized);
 	        } catch (YAPI_Exception ex) {
 	            System.out.println("Cannot contact VirtualHub on 127.0.0.1 (" + ex.getLocalizedMessage() + ")");
 	            System.out.println("Ensure that the VirtualHub application is running");
@@ -62,6 +65,7 @@ public class YoctopuceSensor implements Runnable{
 	 * writes the current value of the yocto sensors to corresponding table in db.
 	 * 
 	 */
+	@SuppressWarnings("static-access")
 	@Override
 	public void run(){
 		while(isRunning){
@@ -70,12 +74,14 @@ public class YoctopuceSensor implements Runnable{
 					DB.get().addSensorvalue(sensors.get(i).getLogicalName(), sensors.get(i).get_currentValue());
 					System.out.println("sensor: " + sensors.get(i).get_module().get_logicalName()+"value: "+sensors.get(i).get_currentValue() );
 				} catch (YAPI_Exception e) {
-					//one or more sensors is offline
-					e.printStackTrace();
+					System.out.println("Faild to fetch data from yoctoSensor");
 				}
 
 			}
-		
+			try {
+				t.sleep(interval);
+			} catch (InterruptedException e) {
+			}
 		}
 
 	}
@@ -91,6 +97,13 @@ public class YoctopuceSensor implements Runnable{
 	public void start(){
 		isRunning = true; 
 		t.start();
+	}
+	/**
+	 * Sets the update rate for the sensors. 
+	 * @param newRate new update rate in milliseconds. 
+	 */
+	public void setInterval (long newRate){
+		interval = newRate;
 	}
 }	
 	
