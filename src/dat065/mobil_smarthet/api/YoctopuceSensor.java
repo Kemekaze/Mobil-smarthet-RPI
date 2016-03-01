@@ -19,7 +19,7 @@ public class YoctopuceSensor implements Runnable{
 	
 	private boolean isRunning = false ,isInitialized = true;
 	private ArrayList<YSensor> sensors = new ArrayList<>();
-	private long interval = 10000;
+	private long interval = 1000;
 	private Thread t;
 	
 	/**
